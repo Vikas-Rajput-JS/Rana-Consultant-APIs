@@ -4,7 +4,7 @@ const mongoose = require("mongoose");
 
 // MongoDB Clustor==============>
 const Connection = mongoose.connect(
-  "mongodb+srv://vikasrajput95181:Y788wjSDbChDsjMF@rana-consultant.1zpz5m4.mongodb.net/?retryWrites=true&w=majority&appName=Rana-Consultant"
+  "mongodb+srv://vikasrajput95181:Y788wjSDbChDsjMF@rana-consultant.1zpz5m4.mongodb.net/"
 );
 
 if (Connection) {
