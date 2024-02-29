@@ -49,8 +49,7 @@ Router.post("/login", async (req, res) => {
         message: "Email Does not exixt in Our System",
       });
     }
-    console.log(FindUser )
-    let ComparePassword = await bcrypt.compare(password, FindUser.password);
+    let ComparePassword = await bcrypt.compare(password, FindUser?.password);
 
     if (!ComparePassword) {
       res.status(401).send({
@@ -69,20 +68,27 @@ Router.post("/login", async (req, res) => {
 
     const token = jwt.sign(Data, SECRET_KEY, { expiresIn: "1h" });
 
-    res.status(200).send({ success: true, token, status: 200,message:"Logged in successfuly" });
+    res
+      .status(200)
+      .send({
+        success: true,
+        token,
+        status: 200,
+        message: "Logged in successfuly",
+      });
   } catch (error) {
     console.log(error);
   }
 });
 
-Router.get("/profile", VerifyUser,async (req, res) => {
+Router.get("/profile", VerifyUser, async (req, res) => {
   try {
     let token = req.header("Authorization");
     const Decode = jwt.verify(token, SECRET_KEY);
-    const {id} = Decode?.Auth;
+    const { id } = Decode?.Auth;
     console.log(id);
 
-    let FindUser = await Users.findById(id).select('-password');
+    let FindUser = await Users.findById(id).select("-password");
 
     if (!FindUser) {
       res
@@ -90,13 +96,14 @@ Router.get("/profile", VerifyUser,async (req, res) => {
         .send({ message: "User not found", status: 400, success: false });
     }
 
-    res.send({data:FindUser,success:true,status:200,message:"User details fetched successfuly"})
-      
-
-
+    res.send({
+      data: FindUser,
+      success: true,
+      status: 200,
+      message: "User details fetched successfuly",
+    });
   } catch (error) {
-
-    console.log(error)
+    console.log(error);
   }
 });
 
