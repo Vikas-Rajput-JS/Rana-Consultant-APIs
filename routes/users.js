@@ -49,7 +49,7 @@ Router.post("/login", async (req, res) => {
         message: "Email Does not exixt in Our System",
       });
     }
-
+    console.log(FindUser )
     let ComparePassword = await bcrypt.compare(password, FindUser.password);
 
     if (!ComparePassword) {
