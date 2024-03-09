@@ -4,9 +4,15 @@ const Schema = mongoose.Schema({
     firstName:{type:String,required:true},
     lastName:{type:String},
     email:{type:String,required:true,unique:true},
-    MobileNo:{type:String},
+    mobileNo:{type:String},
+    dialCode:{type:String},
     address:{type:String},
-    gender:{type:String},
+    city:{type:String},
+    state:{type:String},
+    country:{type:String},
+    pincode:{type:String},
+    lat:{type:String},
+    lng:{type:String},
     image:{type:String},
     password:{type:String,require:true}
 

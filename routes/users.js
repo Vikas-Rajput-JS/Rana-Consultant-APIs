@@ -1,11 +1,32 @@
 var express = require("express");
 const VerifyUser = require("../MiddleWare/VerifyUser");
 var Router = express.Router();
+const path = require('path');
 const Users = require("../Models/Users");
 const SECRET_KEY =
   "Nikk.Vikas@95181!Hisar###$B(&^$&^%$&^%&$arwala^9~1@@'Delhi_4947948Har(&%&^*$*^%#&$%yana_$$&&India&^7658765865^%&*^%#$@^$#@#$&%^#@#@&%#$^";
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
+const multer = require("multer");
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'public/data/uploads')
+  },
+  filename: function (req, file, cb) {
+    const ext = path.extname(file.originalname);
+    cb(null, file.fieldname + '-' + Date.now() + ext);
+  }
+});
+const fileFilter = function (req, file, cb) {
+  // Accept only image files
+  if (file.mimetype.startsWith('image/')) {
+    cb(null, true);
+  } else {
+    cb(new Error('File format not supported'), false);
+  }
+};
+
+const upload = multer({ storage: storage,fileFilter:fileFilter });
 /* GET users listing. */
 const WelcomeMail = require("../Mails/WelcomeMail");
 const LoginAlertMail = require("../Mails/LoginAlertMail");
@@ -66,16 +87,14 @@ Router.post("/login", async (req, res) => {
       },
     };
 
-    const token = jwt.sign(Data, SECRET_KEY, { expiresIn: "1h" });
+    const token = jwt.sign(Data, SECRET_KEY, { expiresIn: "24h" });
 
-    res
-      .status(200)
-      .send({
-        success: true,
-        token,
-        status: 200,
-        message: "Logged in successfuly",
-      });
+    res.status(200).send({
+      success: true,
+      token,
+      status: 200,
+      message: "Logged in successfuly",
+    });
   } catch (error) {
     console.log(error);
   }
@@ -105,6 +124,35 @@ Router.get("/profile", VerifyUser, async (req, res) => {
   } catch (error) {
     console.log(error);
   }
+});
+
+Router.put("/edit-profile", VerifyUser, async (req, res) => {
+  const token = req.header("Authorization");
+  const decode = jwt.verify(token, SECRET_KEY);
+  const { id } = decode?.Auth;
+
+  if (id) {
+    const user = await Users.findById(id);
+    if (!user) {
+      res
+        .status(400)
+        .send({ status: 400, success: false, message: "User does'nt exist" });
+    }
+    let UpdateUser = await Users.findByIdAndUpdate({ _id: id }, req.body);
+    if (UpdateUser) {
+      res.status(200).send({
+        success: true,
+        status: 200,
+        message: "Profile updated successfuly",
+      });
+    }
+  }
+});
+
+Router.post("/imageUpload",upload.single('file'), async (req, res) => {
+  console.log(req.files);
+ const UploadImage =  upload.single(req.files);
+ console.log(UploadImage,'==========================')
 });
 
 module.exports = Router;
