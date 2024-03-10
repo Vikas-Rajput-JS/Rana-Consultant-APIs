@@ -1,8 +1,9 @@
 var express = require("express");
 const VerifyUser = require("../MiddleWare/VerifyUser");
 var Router = express.Router();
-const path = require('path');
+const path = require("path");
 const Users = require("../Models/Users");
+const OTP = require("../Models/Otp");
 const SECRET_KEY =
   "Nikk.Vikas@95181!Hisar###$B(&^$&^%$&^%&$arwala^9~1@@'Delhi_4947948Har(&%&^*$*^%#&$%yana_$$&&India&^7658765865^%&*^%#$@^$#@#$&%^#@#@&%#$^";
 const jwt = require("jsonwebtoken");
@@ -10,26 +11,27 @@ const bcrypt = require("bcryptjs");
 const multer = require("multer");
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, 'public/data/uploads')
+    cb(null, "public/data/uploads");
   },
   filename: function (req, file, cb) {
     const ext = path.extname(file.originalname);
-    cb(null, file.fieldname + '-' + Date.now() + ext);
-  }
+    cb(null, file.fieldname + "-" + Date.now() + ext);
+  },
 });
 const fileFilter = function (req, file, cb) {
   // Accept only image files
-  if (file.mimetype.startsWith('image/')) {
+  if (file.mimetype.startsWith("image/")) {
     cb(null, true);
   } else {
-    cb(new Error('File format not supported'), false);
+    cb(new Error("File format not supported"), false);
   }
 };
 
-const upload = multer({ storage: storage,fileFilter:fileFilter });
+const upload = multer({ storage: storage, fileFilter: fileFilter });
 /* GET users listing. */
 const WelcomeMail = require("../Mails/WelcomeMail");
 const LoginAlertMail = require("../Mails/LoginAlertMail");
+const OTPMail = require("../Mails/OTPMail");
 Router.post("/register", async (req, res) => {
   let { firstName, lastName, email, password } = req.body;
   try {
@@ -149,10 +151,96 @@ Router.put("/edit-profile", VerifyUser, async (req, res) => {
   }
 });
 
-Router.post("/imageUpload",upload.single('file'), async (req, res) => {
-  console.log(req.files);
- const UploadImage =  upload.single(req.files);
- console.log(UploadImage,'==========================')
+Router.post("/forgot-password", async (req, res, next) => {
+  try {
+    let { email } = req.body;
+
+    let findUser = await Users.findOne({ email });
+    if (!findUser) {
+      res
+        .status(400)
+        .send({ success: false, status: 400, message: "Email does'nt exist" });
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 90000);
+    const AddOTP = await OTP.create({
+      email: email,
+      otp: otp,
+    });
+
+    if (AddOTP) {
+      OTPMail(email, otp);
+      res.status(200).send({
+        success: true,
+        status: 200,
+        message: "Otp sent to your Email",
+      });
+    }
+  } catch (error) {
+    next(error);
+    // console.log(error);
+  }
+});
+
+Router.post("/otp-verify", async (req, res, next) => {
+  try {
+    let { otp, email } = req.body;
+
+    let FindOTP = await OTP.findOne({ email }).sort({ createdAt: -1 }).limit(1);
+    console.log(FindOTP, "===================");
+    if (FindOTP == null || otp != FindOTP?.otp) {
+      return res
+        .status(400)
+        .send({ code: 400, message: "The OTP is not valid", success: false });
+    }
+
+    res.status(200).send({
+      success: true,
+      status: 200,
+      message: "OTP verified successfuly",
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+Router.put("/reset-password", async (req, res, next) => {
+  try {
+    const { newPassword, email } = req.body;
+
+    let FindEmail = await Users.findOne({ email });
+    if (!FindEmail) {
+      res
+        .status(400)
+        .send({ success: false, status: 400, message: "Email does'nt exist" });
+    }
+
+    const Gensalt = await bcrypt.genSalt(10);
+    const GenPass = await bcrypt.hash(newPassword, Gensalt);
+
+    const UpdatePassword = await Users.updateOne(
+      {
+        email: email,
+      },
+      { $set: { password: GenPass } }
+    );
+    if(UpdatePassword){
+      return res.status(200).send({success:true,status:200,message:"Password reset successfuly"})
+    }
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Router.post("/imageUpload", upload.single("file"), async (req, res) => {
+//   console.log(req.files);
+//   const UploadImage = upload.single(req.files);
+//   console.log(UploadImage, "==========================");
+// });
+
+Router.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ error: "Internal server error" });
 });
 
 module.exports = Router;
