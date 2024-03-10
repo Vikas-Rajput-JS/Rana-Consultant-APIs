@@ -2,8 +2,10 @@ var express = require("express");
 const VerifyUser = require("../MiddleWare/VerifyUser");
 var Router = express.Router();
 const path = require("path");
+
 const Users = require("../Models/Users");
 const OTP = require("../Models/Otp");
+const Admin = require("../Models/AdminModel");
 const SECRET_KEY =
   "Nikk.Vikas@95181!Hisar###$B(&^$&^%$&^%&$arwala^9~1@@'Delhi_4947948Har(&%&^*$*^%#&$%yana_$$&&India&^7658765865^%&*^%#$@^$#@#$&%^#@#@&%#$^";
 const jwt = require("jsonwebtoken");
@@ -35,7 +37,7 @@ const OTPMail = require("../Mails/OTPMail");
 Router.post("/register", async (req, res) => {
   let { firstName, lastName, email, password } = req.body;
   try {
-    let FindUser = await Users.findOne({ email });
+    let FindUser = await Admin.findOne({ email });
     if (FindUser) {
       res.status(400).send({
         success: false,
@@ -47,7 +49,7 @@ Router.post("/register", async (req, res) => {
     const Salt = await bcrypt.genSalt(10);
     const GenPass = await bcrypt.hash(password, Salt);
     req.body.password = GenPass;
-    const CreateUser = await Users.create(req.body);
+    const CreateUser = await Admin.create(req.body);
     WelcomeMail(firstName, email);
 
     res.status(200).send({
@@ -63,7 +65,7 @@ Router.post("/register", async (req, res) => {
 Router.post("/login", async (req, res) => {
   try {
     let { email, password } = req.body;
-    let FindUser = await Users.findOne({ email });
+    let FindUser = await Admin.findOne({ email });
 
     if (!FindUser) {
       res.status(400).send({
@@ -103,8 +105,13 @@ Router.post("/login", async (req, res) => {
 });
 
 Router.get("/users", async (req, res, next) => {
-  let GetUsers = await Users.find({});
-  res.status(200).send({ success: true, status: 200, data: GetUsers });
+    try {
+        
+        let GetUsers = await Users.find({});
+        res.status(200).send({ success: true, status: 200, data: GetUsers });
+    } catch (error) {
+     next(error)   
+    }
 });
 
 Router.get("/profile", VerifyUser, async (req, res) => {
@@ -114,7 +121,7 @@ Router.get("/profile", VerifyUser, async (req, res) => {
     const { id } = Decode?.Auth;
     console.log(id);
 
-    let FindUser = await Users.findById(id).select("-password");
+    let FindUser = await Admin.findById(id).select("-password");
 
     if (!FindUser) {
       res
@@ -139,13 +146,13 @@ Router.put("/edit-profile", VerifyUser, async (req, res) => {
   const { id } = decode?.Auth;
 
   if (id) {
-    const user = await Users.findById(id);
+    const user = await Admin.findById(id);
     if (!user) {
       res
         .status(400)
         .send({ status: 400, success: false, message: "User does'nt exist" });
     }
-    let UpdateUser = await Users.findByIdAndUpdate({ _id: id }, req.body);
+    let UpdateUser = await Admin.findByIdAndUpdate({ _id: id }, req.body);
     if (UpdateUser) {
       res.status(200).send({
         success: true,
@@ -160,7 +167,7 @@ Router.post("/forgot-password", async (req, res, next) => {
   try {
     let { email } = req.body;
 
-    let findUser = await Users.findOne({ email });
+    let findUser = await Admin.findOne({ email });
     if (!findUser) {
       res
         .status(400)
@@ -213,7 +220,7 @@ Router.put("/reset-password", async (req, res, next) => {
   try {
     const { newPassword, email } = req.body;
 
-    let FindEmail = await Users.findOne({ email });
+    let FindEmail = await Admin.findOne({ email });
     if (!FindEmail) {
       res
         .status(400)
@@ -223,20 +230,18 @@ Router.put("/reset-password", async (req, res, next) => {
     const Gensalt = await bcrypt.genSalt(10);
     const GenPass = await bcrypt.hash(newPassword, Gensalt);
 
-    const UpdatePassword = await Users.updateOne(
+    const UpdatePassword = await Admin.updateOne(
       {
         email: email,
       },
       { $set: { password: GenPass } }
     );
     if (UpdatePassword) {
-      return res
-        .status(200)
-        .send({
-          success: true,
-          status: 200,
-          message: "Password reset successfuly",
-        });
+      return res.status(200).send({
+        success: true,
+        status: 200,
+        message: "Password reset successfuly",
+      });
     }
   } catch (error) {
     next(error);
