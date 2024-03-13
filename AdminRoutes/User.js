@@ -55,10 +55,40 @@ Router.post("/register", async (req, res) => {
     res.status(200).send({
       success: true,
       status: 200,
-      message: "Account Created Successfuly",
+      message: "User added successfuly",
     });
   } catch (error) {
     console.log(error);
+  }
+});
+
+Router.put("/edit-user", async (req, res, next) => {
+  try {
+    let { id } = req.body;
+
+    let FindUser = await Users.findById(id);
+
+    if (!FindUser) {
+      return res
+        .status(400)
+        .send({ success: false, message: "User not found", status: 400 });
+    }
+
+    let UpdateUser = await Users.updateOne(
+      { _id: id },
+      {
+        $set: req.body,
+      }
+    );
+    if (UpdateUser) {
+      return res.status(200).send({
+        success: false,
+        message: "User updated successfuly",
+        status: 200,
+      });
+    }
+  } catch (error) {
+    next(error);
   }
 });
 
@@ -105,13 +135,12 @@ Router.post("/login", async (req, res) => {
 });
 
 Router.get("/users", async (req, res, next) => {
-    try {
-        
-        let GetUsers = await Users.find({});
-        res.status(200).send({ success: true, status: 200, data: GetUsers });
-    } catch (error) {
-     next(error)   
-    }
+  try {
+    let GetUsers = await Users.find({});
+    res.status(200).send({ success: true, status: 200, data: GetUsers });
+  } catch (error) {
+    next(error);
+  }
 });
 
 Router.get("/profile", VerifyUser, async (req, res) => {

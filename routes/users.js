@@ -103,8 +103,61 @@ Router.post("/login", async (req, res) => {
 });
 
 Router.get("/users", async (req, res, next) => {
-  let GetUsers = await Users.find({});
-  res.status(200).send({ success: true, status: 200, data: GetUsers });
+  try {
+    let count = req.query.count || 5;
+    let page = req.query.page || 1;
+    let sortBy = req.query.sortBy;
+    let filters = req.query;
+    let searchKye = req.query.search;
+
+    let SortObj = {};
+    let Find = {};
+
+    let TotalDocs = await Users.countDocuments();
+
+    if (searchKye) {
+      Find.$or = [
+        { firstName: { $regex: searchKye, $options: "i" } },
+        { lastName: { $regex: searchKye, $options: "i" } },
+        { email: { $regex: searchKye, $options: "i" } },
+        { city: { $regex: searchKye, $options: "i" } },
+        { state: { $regex: searchKye, $options: "i" } },
+        { address: { $regex: searchKye, $options: "i" } },
+      ];
+    }
+
+    let findUsers = await Users.find(Find)
+      .limit(count)
+      .select("-password")
+      .skip((page - 1) * count);
+
+    if (findUsers) {
+      res.status(200).send({
+        success: true,
+        message: "Data fetched successfuly",
+        data: findUsers,
+      });
+    }
+    // if(filters.name){
+    //   Find.name = {$regex:filters.name,$options:'i'}
+    // }
+
+    // if(filters.email){
+    //   Find.email = {$regex:filters.email,$options:"i"}
+    // }
+
+    // if(filters.city){
+    //   Find.city = {$regex:filters.city,$options:"i"}
+    // }
+    // if(filters.search){
+    //   Find.search =
+    // }
+  } catch (error) {
+    next(error);
+  }
+
+  // let GetUsers = await Users.find({});
+  // res.status(200).send({ success: true, status: 200, data: GetUsers });
 });
 
 Router.get("/profile", VerifyUser, async (req, res) => {
@@ -145,7 +198,10 @@ Router.put("/edit-profile", VerifyUser, async (req, res) => {
         .status(400)
         .send({ status: 400, success: false, message: "User does'nt exist" });
     }
-    let UpdateUser = await Users.findByIdAndUpdate({ _id: id }, req.body);
+    let UpdateUser = await Users.findByIdAndUpdate(
+      { _id: id },
+      { updatedAt: Date.now(), ...req.body }
+    );
     if (UpdateUser) {
       res.status(200).send({
         success: true,
@@ -230,13 +286,11 @@ Router.put("/reset-password", async (req, res, next) => {
       { $set: { password: GenPass } }
     );
     if (UpdatePassword) {
-      return res
-        .status(200)
-        .send({
-          success: true,
-          status: 200,
-          message: "Password reset successfuly",
-        });
+      return res.status(200).send({
+        success: true,
+        status: 200,
+        message: "Password reset successfuly",
+      });
     }
   } catch (error) {
     next(error);
