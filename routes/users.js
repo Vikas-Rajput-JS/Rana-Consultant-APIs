@@ -136,6 +136,7 @@ Router.get("/users", async (req, res, next) => {
         success: true,
         message: "Data fetched successfuly",
         data: findUsers,
+        total:TotalDocs
       });
     }
     // if(filters.name){

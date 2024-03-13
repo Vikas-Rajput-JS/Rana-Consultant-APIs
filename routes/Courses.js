@@ -51,6 +51,7 @@ Router.get("/courses", async (req, res, next) => {
       res.status(200).send({
         success: true,
         data: Data,
+        total:TotalDocs,
         status: 200,
         message: "Courses fetched successfuly",
       });
