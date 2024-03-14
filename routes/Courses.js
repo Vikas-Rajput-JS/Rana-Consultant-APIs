@@ -1,25 +1,66 @@
 const express = require("express");
 const Router = express.Router();
 const Courses = require("../Models/Course");
+const { body, validationResult } = require("express-validator");
+Router.post(
+  "/course",
+  [body("name").isLength(3), body("price").isLength(10)],
+  async (req, res, next) => {
+    const result = validationResult(req);
+    console.log(
+      result?.errors?.map((itm) => {
+        return {
+          message: `${itm.path} is required`,
+          success: false,
+          status: 400,
+        };
+      })
+    );
+    try {
+      // function validateObjectsInArray(obj, expectedKeys, index, total) {
+      //   for (let key in obj) {
+      //     if (!expectedKeys.includes(key)) {
+      //       throw new Error(`Unexpected key '${key}' found in Your file`);
+      //     }
+      //   }
+      // }
 
-Router.post("/course", async (req, res, next) => {
-  try {
-    let body = req.body;
-    let AddCourse = await Courses.create(body);
+      // const expectedKeys = [
+      //   "name",
+      //   "startDate",
+      //   "endDate",
+      //   "price",
+      //   "collegeName",
+      //   "address",
+      //   "city",
+      //   "state",
+      //   "country",
+      //   "pincode",
+      //   "registrationFees",
+      // ];
 
-    let Result = AddCourse.save();
+      // try {
+      //   validateObjectsInArray(req.body, expectedKeys);
+      // } catch (error) {
+      //   console.log(error);
+      // }
+      let body = req.body;
+      let AddCourse = await Courses.create(body);
 
-    if (Result) {
-      res.status(200).send({
-        success: true,
-        message: "Course added successfuly",
-        status: 200,
-      });
+      let Result = AddCourse.save();
+
+      if (Result) {
+        res.status(200).send({
+          success: true,
+          message: "Course added successfuly",
+          status: 200,
+        });
+      }
+    } catch (error) {
+      next(error);
     }
-  } catch (error) {
-    next(error);
   }
-});
+);
 
 Router.get("/courses", async (req, res, next) => {
   try {
@@ -51,7 +92,7 @@ Router.get("/courses", async (req, res, next) => {
       res.status(200).send({
         success: true,
         data: Data,
-        total:TotalDocs,
+        total: TotalDocs,
         status: 200,
         message: "Courses fetched successfuly",
       });
@@ -79,7 +120,8 @@ Router.put("/course", async (req, res, next) => {
       },
       {
         $set: {
-            updatedAt:Date.now(),...req.body
+          updatedAt: Date.now(),
+          ...req.body,
         },
       }
     );
