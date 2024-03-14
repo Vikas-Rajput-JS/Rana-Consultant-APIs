@@ -102,6 +102,23 @@ Router.get("/courses", async (req, res, next) => {
   }
 });
 
+Router.get("/course", async (req, res, next) => {
+  try {
+    let { id } = req.query;
+
+    let Course = await Courses.findById(id);
+    if (!Course) {
+      return res
+        .status(500)
+        .send({ success: false, message: "Course not found", status: 500 });
+    }
+
+    res.status(200).send({ success: true, data: Course, status: 200 });
+  } catch (error) {
+    next(error);
+  }
+});
+
 Router.put("/course", async (req, res, next) => {
   try {
     let { id } = req.body;

@@ -16,15 +16,13 @@ const Schema = mongoose.Schema({
   registrationFees: { type: Number, required: true },
 });
 
-Schema.set("ToJON", {
+Schema.set("toJSON", {
   virtuals: true,
   versionKey: false,
   transform: function (doc, ret) {
     delete ret._id;
   },
 });
-
-
-const Model = mongoose.model('courses',Schema)
+const Model = mongoose.model("courses", Schema);
 
 module.exports = Model;
