@@ -47,7 +47,11 @@ Router.post("/register", async (req, res) => {
     const Salt = await bcrypt.genSalt(10);
     const GenPass = await bcrypt.hash(password, Salt);
     req.body.password = GenPass;
-    const CreateUser = await Users.create(req.body);
+    let value = {
+      ...req.body,
+      fullName: firstName + " " + lastName,
+    };
+    const CreateUser = await Users.create(value);
     WelcomeMail(firstName, email);
 
     res.status(200).send({
@@ -136,7 +140,7 @@ Router.get("/users", async (req, res, next) => {
         success: true,
         message: "Data fetched successfuly",
         data: findUsers,
-        total:TotalDocs
+        total: TotalDocs,
       });
     }
     // if(filters.name){

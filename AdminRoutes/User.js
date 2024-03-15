@@ -2,7 +2,8 @@ var express = require("express");
 const VerifyUser = require("../MiddleWare/VerifyUser");
 var Router = express.Router();
 const path = require("path");
-
+const UserSchema = require('../SchemaValdations/User')
+const ValidationMiddleWare = require('../MiddleWare/JoiValidator')
 const Users = require("../Models/Users");
 const OTP = require("../Models/Otp");
 const Admin = require("../Models/AdminModel");
@@ -34,7 +35,7 @@ const upload = multer({ storage: storage, fileFilter: fileFilter });
 const WelcomeMail = require("../Mails/WelcomeMail");
 const LoginAlertMail = require("../Mails/LoginAlertMail");
 const OTPMail = require("../Mails/OTPMail");
-Router.post("/register", async (req, res) => {
+Router.post("/adduser",ValidationMiddleWare(UserSchema.Data), async (req, res) => {
   let { firstName, lastName, email, password } = req.body;
   try {
     let FindUser = await Admin.findOne({ email });
@@ -49,7 +50,12 @@ Router.post("/register", async (req, res) => {
     const Salt = await bcrypt.genSalt(10);
     const GenPass = await bcrypt.hash(password, Salt);
     req.body.password = GenPass;
-    const CreateUser = await Admin.create(req.body);
+    let value = {
+      ...req.body,
+      fullName: firstName + " " + lastName,
+    };
+    const CreateUser = await Admin.create(value);
+
     WelcomeMail(firstName, email);
 
     res.status(200).send({

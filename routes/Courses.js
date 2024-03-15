@@ -1,49 +1,17 @@
 const express = require("express");
 const Router = express.Router();
 const Courses = require("../Models/Course");
+const ValidationMiddleWare = require('../MiddleWare/JoiValidator')
+const CourseSchema = require('../SchemaValdations/Course')
 const { body, validationResult } = require("express-validator");
 Router.post(
   "/course",
-  [body("name").isLength(3), body("price").isLength(10)],
+  // [body("name").isLength(3), body("price").isLength(10)],
+  ValidationMiddleWare(CourseSchema.Data),
   async (req, res, next) => {
-    const result = validationResult(req);
-    console.log(
-      result?.errors?.map((itm) => {
-        return {
-          message: `${itm.path} is required`,
-          success: false,
-          status: 400,
-        };
-      })
-    );
+   
     try {
-      // function validateObjectsInArray(obj, expectedKeys, index, total) {
-      //   for (let key in obj) {
-      //     if (!expectedKeys.includes(key)) {
-      //       throw new Error(`Unexpected key '${key}' found in Your file`);
-      //     }
-      //   }
-      // }
 
-      // const expectedKeys = [
-      //   "name",
-      //   "startDate",
-      //   "endDate",
-      //   "price",
-      //   "collegeName",
-      //   "address",
-      //   "city",
-      //   "state",
-      //   "country",
-      //   "pincode",
-      //   "registrationFees",
-      // ];
-
-      // try {
-      //   validateObjectsInArray(req.body, expectedKeys);
-      // } catch (error) {
-      //   console.log(error);
-      // }
       let body = req.body;
       let AddCourse = await Courses.create(body);
 
