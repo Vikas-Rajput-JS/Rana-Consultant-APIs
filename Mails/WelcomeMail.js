@@ -1,24 +1,23 @@
-const nodemailer = require('nodemailer')
+const nodemailer = require("nodemailer");
 
-    const transporter = nodemailer.createTransport({
-        host:"smtp.gmail.com",
-        port:587,
-        secure:false,
-        requireTLS:true,
-        auth:{
-        user:  "vr384695@gmail.com",
-        pass:   "rhebfxcwhnvaquye"
-        }
-    })
+const transporter = nodemailer.createTransport({
+  host: "smtp.gmail.com",
+  port: 587,
+  secure: false,
+  requireTLS: true,
+  auth: {
+    user: "vr384695@gmail.com",
+    pass: "rhebfxcwhnvaquye",
+  },
+});
 
-const WelcomeMail = async (name,email) => {
-    
-    const info = await transporter.sendMail({
-      from: "vr384695@gmail.com", // sender address
-      to: email, // list of receivers
-      subject: "∞ Welcome to SociaLity ®", // Subject line
-      text: "Thanks to Be a part of Developer's Zone", // plain text body
-      html: `<!DOCTYPE html>
+const WelcomeMail = async (name, email, password) => {
+  const info = await transporter.sendMail({
+    from: "vr384695@gmail.com", // sender address
+    to: email, // list of receivers
+    subject: "∞ Welcome to SociaLity ®", // Subject line
+    text: "Thanks to Be a part of Developer's Zone", // plain text body
+    html: `<!DOCTYPE html>
       <html xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office" lang="en">
       
       <head>
@@ -177,7 +176,8 @@ const WelcomeMail = async (name,email) => {
       <w:anchorlock/>
       <v:textbox inset="0px,0px,0px,0px">
       <center style="color:#ffffff; font-family:Arial, sans-serif; font-size:16px">
-      <![endif]--><a href="www.example.com" target="_blank" style="text-decoration:none;display:inline-block;color:#ffffff;background-color:#6c69ee;border-radius:4px;width:auto;border-top:1px solid #6C69EE;font-weight:400;border-right:1px solid #6C69EE;border-bottom:1px solid #6C69EE;border-left:1px solid #6C69EE;padding-top:5px;padding-bottom:5px;font-family:Arial, Helvetica, sans-serif;font-size:16px;text-align:center;mso-border-alt:none;word-break:keep-all;"><span style="padding-left:40px;padding-right:40px;font-size:16px;display:inline-block;letter-spacing:normal;"><span style="word-break: break-word; line-height: 32px;">Get Started!</span></span></a><!--[if mso]></center></v:textbox></v:roundrect><![endif]--></div>
+      <![endif]--><a href="www.example.com" target="_blank" style="text-decoration:none;display:inline-block;color:#ffffff;background-color:#6c69ee;border-radius:4px;width:auto;border-top:1px solid #6C69EE;font-weight:400;border-right:1px solid #6C69EE;border-bottom:1px solid #6C69EE;border-left:1px solid #6C69EE;padding-top:5px;padding-bottom:5px;font-family:Arial, Helvetica, sans-serif;font-size:16px;text-align:center;mso-border-alt:none;word-break:keep-all;"><span style="padding-left:40px;padding-right:40px;font-size:16px;display:inline-block;letter-spacing:normal;"><span style="word-break: break-word; line-height: 32px;">Get Started! ${password?`password:${password}`:''}</span></span>
+      </a><!--[if mso]></center></v:textbox></v:roundrect><![endif]--></div>
                                     </td>
                                   </tr>
                                 </table>
@@ -564,10 +564,10 @@ const WelcomeMail = async (name,email) => {
       </body>
       
       </html>`, // html body
-    });
-    if(info){
-        return console.log("Welcome email is sent")
-    }
-  };
+  });
+  if (info) {
+    return console.log("Welcome email is sent");
+  }
+};
 
-  module.exports = WelcomeMail;
+module.exports = WelcomeMail;

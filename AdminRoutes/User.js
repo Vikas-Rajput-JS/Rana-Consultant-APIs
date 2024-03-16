@@ -2,8 +2,8 @@ var express = require("express");
 const VerifyUser = require("../MiddleWare/VerifyUser");
 var Router = express.Router();
 const path = require("path");
-const UserSchema = require('../SchemaValdations/User')
-const ValidationMiddleWare = require('../MiddleWare/JoiValidator')
+const UserSchema = require("../SchemaValdations/User");
+const ValidationMiddleWare = require("../MiddleWare/JoiValidator");
 const Users = require("../Models/Users");
 const OTP = require("../Models/Otp");
 const Admin = require("../Models/AdminModel");
@@ -35,38 +35,50 @@ const upload = multer({ storage: storage, fileFilter: fileFilter });
 const WelcomeMail = require("../Mails/WelcomeMail");
 const LoginAlertMail = require("../Mails/LoginAlertMail");
 const OTPMail = require("../Mails/OTPMail");
-Router.post("/adduser",ValidationMiddleWare(UserSchema.Data), async (req, res) => {
-  let { firstName, lastName, email, password } = req.body;
-  try {
-    let FindUser = await Admin.findOne({ email });
-    if (FindUser) {
-      res.status(400).send({
-        success: false,
-        status: 400,
-        message: "Email already exist with another user",
+Router.post(
+  "/adduser",
+  ValidationMiddleWare(UserSchema.Data),
+  async (req, res) => {
+    let { firstName, lastName, email } = req.body;
+    try {
+      let FindUser = await Users.findOne({ email });
+      if (FindUser) {
+        res.status(400).send({
+          success: false,
+          status: 400,
+          message: "Email already exist with another user",
+        });
+      }
+      console.log(FindUser);
+      var chars =
+        "0123456789abcdefghijklmnopqrstuvwxyz!@#$%^&*()ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+      var passwordLength = 12;
+      var password = "";
+      for (var i = 0; i <= passwordLength; i++) {
+        var randomNumber = Math.floor(Math.random() * chars.length);
+        password += chars.substring(randomNumber, randomNumber + 1);
+      }
+      const Salt = await bcrypt.genSalt(10);
+      const GenPass = await bcrypt.hash(password, Salt);
+      req.body.password = GenPass;
+      let value = {
+        ...req.body,
+        fullName: firstName + " " + lastName,
+      };
+      const CreateUser = await Users.create(value);
+
+      WelcomeMail(firstName, email, password);
+
+      res.status(200).send({
+        success: true,
+        status: 200,
+        message: "User added successfuly",
       });
+    } catch (error) {
+      console.log(error);
     }
-    console.log(FindUser);
-    const Salt = await bcrypt.genSalt(10);
-    const GenPass = await bcrypt.hash(password, Salt);
-    req.body.password = GenPass;
-    let value = {
-      ...req.body,
-      fullName: firstName + " " + lastName,
-    };
-    const CreateUser = await Admin.create(value);
-
-    WelcomeMail(firstName, email);
-
-    res.status(200).send({
-      success: true,
-      status: 200,
-      message: "User added successfuly",
-    });
-  } catch (error) {
-    console.log(error);
   }
-});
+);
 
 Router.put("/edit-user", async (req, res, next) => {
   try {
@@ -101,7 +113,7 @@ Router.put("/edit-user", async (req, res, next) => {
 Router.post("/login", async (req, res) => {
   try {
     let { email, password } = req.body;
-    let FindUser = await Admin.findOne({ email });
+    let FindUser = await Users.findOne({ email });
 
     if (!FindUser) {
       res.status(400).send({

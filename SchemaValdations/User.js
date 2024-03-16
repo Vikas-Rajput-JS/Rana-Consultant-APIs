@@ -3,6 +3,7 @@ const joi = require("joi");
 const Schemas = {
   Data: joi.object({
     firstName: joi.string().required(),
+    lastName: joi.string(),
     email: joi
       .string()
       .email({ minDomainSegments: 2, tlds: { allow: ["com", "net"] } }),
