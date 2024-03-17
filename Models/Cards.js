@@ -2,7 +2,12 @@ const mongoose = require("mongoose");
 
 const Schema = mongoose.Schema({
   user_id: { type: mongoose.Types.ObjectId, ref: "users", required: true },
-  course_id: { type: mongoose.Types.ObjectId, ref: "courses", required: true },
+
+  cardNo: { type: Number, required: true },
+  cvc: { type: Number, required: true },
+  expiryMonth: { type: Number, required: true },
+  expiryYear: { type: Number, required: true },
+  cardHolder: { type: String, require: true },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date },
 });
@@ -14,6 +19,6 @@ Schema.set("toJSON", {
   },
 });
 
-const Model = mongoose.model("AppliedCourses", Schema);
+const Model = mongoose.model("cards", Schema);
 
 module.exports = Model;

@@ -20,7 +20,12 @@ const storage = multer.diskStorage({
 });
 const fileFilter = function (req, file, cb) {
   // Accept only image files
-  if (file.mimetype.startsWith("image/")) {
+  if (
+    file.mimetype.startsWith("application/pdf") ||
+    file.mimetype.startsWith("image/jpeg") ||
+    file.mimetype.startsWith("image/png") ||
+    file.mimetype.startsWith("image/jpg")
+  ) {
     cb(null, true);
   } else {
     cb(new Error("File format not supported"), false);
@@ -195,7 +200,7 @@ Router.put("/edit-profile", VerifyUser, async (req, res) => {
   const token = req.header("Authorization");
   const decode = jwt.verify(token, SECRET_KEY);
   const { id } = decode?.Auth;
-
+  console.log(req.body);
   if (id) {
     const user = await Users.findById(id);
     if (!user) {
@@ -203,10 +208,12 @@ Router.put("/edit-profile", VerifyUser, async (req, res) => {
         .status(400)
         .send({ status: 400, success: false, message: "User does'nt exist" });
     }
-    let UpdateUser = await Users.findByIdAndUpdate(
+    let value = req.body;
+    let UpdateUser = await Users.updateOne(
       { _id: id },
-      { updatedAt: Date.now(), ...req.body }
+      { ...value, updatedAt: Date.now() }
     );
+    console.log(UpdateUser, "==========");
     if (UpdateUser) {
       res.status(200).send({
         success: true,

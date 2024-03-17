@@ -16,7 +16,12 @@ const storage = multer.diskStorage({
 });
 const fileFilter = function (req, file, cb) {
   // Accept only image files
-  if (file.mimetype.startsWith("image/")) {
+  if (
+    file.mimetype.startsWith("application/pdf") ||
+    file.mimetype.startsWith("image/jpeg") ||
+    file.mimetype.startsWith("image/png") ||
+    file.mimetype.startsWith("image/jpg")
+  ) {
     cb(null, true);
   } else {
     cb(new Error("File format not supported"), false);
@@ -26,7 +31,6 @@ const fileFilter = function (req, file, cb) {
 const upload = multer({ storage: storage, fileFilter: fileFilter });
 
 Router.post("/imageUpload", upload.single("file"), async (req, res, next) => {
-
   try {
     if (!req?.file) {
       res?.status(400).send({
@@ -35,9 +39,16 @@ Router.post("/imageUpload", upload.single("file"), async (req, res, next) => {
         message: "Please provide valid file",
       });
     }
-    res.status(200).send({success:true,status:200,data:{path:req.file.filename,fullPath:`images/modal=user/${req.file?.filename}`}})
+    res.status(200).send({
+      success: true,
+      status: 200,
+      data: {
+        path: req.file.filename,
+        fullPath: `images/modal=user/${req.file?.filename}`,
+      },
+    });
   } catch (error) {
-    console.log(error)
+    console.log(error);
     next(error);
   }
 });

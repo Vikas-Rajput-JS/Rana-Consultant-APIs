@@ -13,6 +13,7 @@ const Schema = mongoose.Schema({
   state: { type: String },
   country: { type: String },
   pincode: { type: Number },
+  status:{type:String,default:'active'},
   registrationFees: { type: Number, required: true },
 });
 

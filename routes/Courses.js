@@ -1,17 +1,19 @@
 const express = require("express");
 const Router = express.Router();
 const Courses = require("../Models/Course");
-const ValidationMiddleWare = require('../MiddleWare/JoiValidator')
-const CourseSchema = require('../SchemaValdations/Course')
+const CourseModel = require("../Models/ApplyCourse");
+const Users = require("../Models/Users");
+const ValidationMiddleWare = require("../MiddleWare/JoiValidator");
+const CourseSchema = require("../SchemaValdations/Course");
+const AppliedCoursesSchema = require("../SchemaValdations/ApplyCourse");
 const { body, validationResult } = require("express-validator");
+
 Router.post(
   "/course",
   // [body("name").isLength(3), body("price").isLength(10)],
   ValidationMiddleWare(CourseSchema.Data),
   async (req, res, next) => {
-   
     try {
-
       let body = req.body;
       let AddCourse = await Courses.create(body);
 
@@ -122,6 +124,47 @@ Router.put("/course", async (req, res, next) => {
     next(error);
   }
 });
+
+
+
+Router.post(
+  "/apply-course",
+  ValidationMiddleWare(AppliedCoursesSchema.Data),
+  async (req, res) => {
+    try {
+      let { user_id, course_id } = req.body;
+
+      let findUser = await Users.findById(user_id);
+      if (!findUser) {
+        return res
+          .status(400)
+          .send({ success: false, status: 400, message: "User not found" });
+      }
+      let findCourse = await CourseModel.findById(course_id);
+      if (!findUser) {
+        return res
+          .status(400)
+          .send({ success: false, status: 400, message: "Course not found" });
+      }
+
+      let CreateRequest = await CourseModel.create({
+        user_id,
+        course_id,
+      });
+      CreateRequest.save();
+
+      if (CreateRequest) {
+        res
+          .status(200)
+          .send({
+            success: true,
+            status: 200,
+            message: "You have applied for this course successfuly",
+          });
+      }
+    } catch (error) {}
+  }
+);
 
 Router.use((err, req, res, next) => {
   console.log(err.stack);

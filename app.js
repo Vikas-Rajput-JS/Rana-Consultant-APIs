@@ -13,6 +13,8 @@ var usersRouter = require("./routes/users");
 const UserRouter = require("./routes/users");
 const AdminRouter = require("./AdminRoutes/User");
 const CourseRouter = require("./routes/Courses");
+const PaymentRoutes = require("./routes/Payments");
+
 require("./Connection/DB");
 var app = express();
 app.use(cors());
@@ -36,6 +38,7 @@ app.use("/", UserRouter);
 app.use("/common", CommonAPI);
 app.use("/admin", AdminRouter);
 app.use("/", CourseRouter);
+app.use("/", PaymentRoutes);
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
   next(createError(404));
