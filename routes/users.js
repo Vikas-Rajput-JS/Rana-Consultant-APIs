@@ -195,6 +195,31 @@ Router.get("/profile", VerifyUser, async (req, res) => {
     console.log(error);
   }
 });
+Router.get("/user-detail", VerifyUser, async (req, res) => {
+  try {
+    let token = req.header("Authorization");
+    const Decode = jwt.verify(token, SECRET_KEY);
+    const { id } = req.query;
+
+
+    let FindUser = await Users.findById(id).select("-password");
+
+    if (!FindUser) {
+      res
+        .status(400)
+        .send({ message: "User not found", status: 400, success: false });
+    }
+
+    res.send({
+      data: FindUser,
+      success: true,
+      status: 200,
+      message: "User details fetched successfuly",
+    });
+  } catch (error) {
+    console.log(error);
+  }
+});
 
 Router.put("/edit-profile", VerifyUser, async (req, res) => {
   const token = req.header("Authorization");
@@ -208,7 +233,14 @@ Router.put("/edit-profile", VerifyUser, async (req, res) => {
         .status(400)
         .send({ status: 400, success: false, message: "User does'nt exist" });
     }
-    let value = req.body;
+  
+
+     let value = {
+        ...req.body,
+        fullName:
+          req.body.firstName+" "+req.body.lastName,
+      };
+    
     let UpdateUser = await Users.updateOne(
       { _id: id },
       { ...value, updatedAt: Date.now() }

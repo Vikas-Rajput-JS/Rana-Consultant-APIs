@@ -8,6 +8,7 @@ const Schema = mongoose.Schema({
   expiryMonth: { type: Number, required: true },
   expiryYear: { type: Number, required: true },
   cardHolder: { type: String, require: true },
+  status: { type: String, default: "active" },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date },
 });

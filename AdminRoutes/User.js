@@ -35,6 +35,42 @@ const upload = multer({ storage: storage, fileFilter: fileFilter });
 const WelcomeMail = require("../Mails/WelcomeMail");
 const LoginAlertMail = require("../Mails/LoginAlertMail");
 const OTPMail = require("../Mails/OTPMail");
+
+Router.post("/register", async (req, res) => {
+  let { firstName, lastName, email, password } = req.body;
+  try {
+    let FindUser = await Admin.findOne({ email });
+    if (FindUser) {
+      res.status(400).send({
+        success: false,
+        status: 400,
+        message: "Email already exist with another user",
+      });
+    }
+    console.log(FindUser);
+    const Salt = await bcrypt.genSalt(10);
+    const GenPass = await bcrypt.hash(password, Salt);
+    req.body.password = GenPass;
+    let value = {
+      firstName,
+      lastName,
+      email,
+     password: GenPass,
+      fullName: firstName + " " + lastName,
+    };
+    const CreateUser = await Admin.create(value);
+    WelcomeMail(firstName, email);
+
+    res.status(200).send({
+      success: true,
+      status: 200,
+      message: "Account Created Successfuly",
+    });
+  } catch (error) {
+    console.log(error);
+  }
+});
+
 Router.post(
   "/adduser",
   ValidationMiddleWare(UserSchema.Data),
@@ -100,7 +136,7 @@ Router.put("/edit-user", async (req, res, next) => {
     );
     if (UpdateUser) {
       return res.status(200).send({
-        success: false,
+        success: true,
         message: "User updated successfuly",
         status: 200,
       });
@@ -113,8 +149,8 @@ Router.put("/edit-user", async (req, res, next) => {
 Router.post("/login", async (req, res) => {
   try {
     let { email, password } = req.body;
-    let FindUser = await Users.findOne({ email });
-
+    let FindUser = await Admin.findOne({ email });
+console.log(FindUser,'============')
     if (!FindUser) {
       res.status(400).send({
         status: 400,

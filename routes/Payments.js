@@ -118,11 +118,11 @@ Router.post(
       }
 
       let findCourse = await PaymentModel.find({
-        _id: user_id,
+        user_id: user_id,
         course_id: course_id,
       });
-
-      if (findCourse) {
+      console.log(findCourse);
+      if (findCourse?.length > 0) {
         return res.status(400).send({
           success: false,
           status: 400,

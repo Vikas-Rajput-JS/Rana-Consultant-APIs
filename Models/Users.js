@@ -17,6 +17,7 @@ const Schema = mongoose.Schema({
   pincode: { type: String },
   lat: { type: String },
   lng: { type: String },
+  status: { type: String, default: "active" },
   image: { type: String },
   password: { type: String, require: true },
   createdAt: { type: Date, default: Date.now },
